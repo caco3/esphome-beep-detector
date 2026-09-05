@@ -17,7 +17,7 @@ substitutions:
   # Source for the patched music_leds external component.
   # Use "components" when compiling this repo directly.
   # When including this file as a remote package, override this to e.g.
-  # github://github.com/caco3/esphome-beep-detector@main
+  # github://caco3/esphome-beep-detector@main
   music_leds_source: "components"
   # Refresh interval for the music_leds external component.  Set to "0s" for
   # local development so edits are picked up immediately, and a longer interval

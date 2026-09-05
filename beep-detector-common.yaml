@@ -119,7 +119,6 @@ i2s_audio:
 microphone:
   - platform: i2s_audio
     id: inmp441_mic
-    entity_category: "diagnostic"
     i2s_din_pin: "${i2s_din_pin}"
     adc_type: external
     pdm: false
@@ -134,7 +133,6 @@ light:
   - platform: status_led
     name: "Beep Detector Status"
     id: led_status
-    entity_category: "diagnostic"
     pin: "${status_led_pin}"
     internal: true
 

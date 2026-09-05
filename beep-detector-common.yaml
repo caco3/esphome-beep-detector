@@ -24,6 +24,28 @@ substitutions:
   # (e.g. "1d") when pulling from a remote repository.
   music_leds_refresh: "0s"
 
+  # Tuning defaults (override in the device configuration)
+  beep_min_duration: "200.0"
+  beep_volume_threshold: "0.0"
+  freezer_beep_threshold: "2.0"
+  freezer_freq_threshold: "1500.0"
+  freezer_guard_width: "400.0"
+  freezer_off_max: "2500.0"
+  freezer_off_min: "800.0"
+  freezer_on_max: "1800.0"
+  freezer_on_min: "800.0"
+  freezer_target_frequency: "3515.0"
+  freezer_target_width: "62.5"
+  frequency_filter_alpha: "1.0"
+  noise_gate_floor_num: "0.001"
+  pre_amp_gain_num: "1.0"
+  usv_beep_threshold: "5.0"
+  usv_freq_max: "2030.0"
+  usv_freq_min: "1970.0"
+  usv_guard_width: "400.0"
+  usv_target_frequency: "2000.0"
+  usv_target_width: "100.0"
+
 esphome:
   name: "${name}"
   name_add_mac_suffix: "${name_add_mac_suffix}"
@@ -388,83 +410,83 @@ globals:
     restore_value: false
   - id: g_beep_volume_threshold
     type: float
-    initial_value: '0.0'
+    initial_value: '${beep_volume_threshold}'
     restore_value: false
   - id: g_freezer_freq_threshold
     type: float
-    initial_value: '1500.0'
+    initial_value: '${freezer_freq_threshold}'
     restore_value: false
   - id: g_freezer_on_min
     type: float
-    initial_value: '800.0'
+    initial_value: '${freezer_on_min}'
     restore_value: false
   - id: g_freezer_on_max
     type: float
-    initial_value: '1800.0'
+    initial_value: '${freezer_on_max}'
     restore_value: false
   - id: g_freezer_off_min
     type: float
-    initial_value: '800.0'
+    initial_value: '${freezer_off_min}'
     restore_value: false
   - id: g_freezer_off_max
     type: float
-    initial_value: '2500.0'
+    initial_value: '${freezer_off_max}'
     restore_value: false
   - id: g_usv_freq_min
     type: float
-    initial_value: '1970.0'
+    initial_value: '${usv_freq_min}'
     restore_value: false
   - id: g_usv_freq_max
     type: float
-    initial_value: '2030.0'
+    initial_value: '${usv_freq_max}'
     restore_value: false
   - id: g_beep_min_duration
     type: float
-    initial_value: '200.0'
+    initial_value: '${beep_min_duration}'
     restore_value: false
   - id: g_frequency_filter_alpha
     type: float
-    initial_value: '1.0'
+    initial_value: '${frequency_filter_alpha}'
     restore_value: false
   - id: g_noise_gate_floor_num
     type: float
-    initial_value: '0.001'
+    initial_value: '${noise_gate_floor_num}'
     restore_value: false
   - id: g_pre_amp_gain_num
     type: float
-    initial_value: '1.0'
+    initial_value: '${pre_amp_gain_num}'
     restore_value: false
   - id: g_usv_target_frequency
     type: float
-    initial_value: '2000.0'
+    initial_value: '${usv_target_frequency}'
     restore_value: false
   - id: g_usv_target_width
     type: float
-    initial_value: '100.0'
+    initial_value: '${usv_target_width}'
     restore_value: false
   - id: g_usv_guard_width
     type: float
-    initial_value: '400.0'
+    initial_value: '${usv_guard_width}'
     restore_value: false
   - id: g_freezer_target_frequency
     type: float
-    initial_value: '3515.0'
+    initial_value: '${freezer_target_frequency}'
     restore_value: false
   - id: g_freezer_target_width
     type: float
-    initial_value: '62.5'
+    initial_value: '${freezer_target_width}'
     restore_value: false
   - id: g_freezer_guard_width
     type: float
-    initial_value: '400.0'
+    initial_value: '${freezer_guard_width}'
     restore_value: false
   - id: g_usv_beep_threshold
     type: float
-    initial_value: '5.0'
+    initial_value: '${usv_beep_threshold}'
     restore_value: false
   - id: g_freezer_beep_threshold
     type: float
-    initial_value: '2.0'
+    initial_value: '${freezer_beep_threshold}'
     restore_value: false
 
 sensor:

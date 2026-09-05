@@ -4,7 +4,7 @@ number:
     id: beep_volume_threshold
     optimistic: true
     restore_value: true
-    initial_value: 0.0
+    initial_value: ${beep_volume_threshold}
     min_value: 0
     max_value: 1
     step: 0.001
@@ -16,7 +16,7 @@ number:
     id: freezer_freq_threshold
     optimistic: true
     restore_value: true
-    initial_value: 1500
+    initial_value: ${freezer_freq_threshold}
     min_value: 0
     max_value: 10000
     step: 10
@@ -29,7 +29,7 @@ number:
     id: freezer_on_min
     optimistic: true
     restore_value: false
-    initial_value: 800
+    initial_value: ${freezer_on_min}
     min_value: 0
     max_value: 5000
     step: 10
@@ -42,7 +42,7 @@ number:
     id: freezer_on_max
     optimistic: true
     restore_value: false
-    initial_value: 1800
+    initial_value: ${freezer_on_max}
     min_value: 0
     max_value: 10000
     step: 10
@@ -55,7 +55,7 @@ number:
     id: freezer_off_min
     optimistic: true
     restore_value: false
-    initial_value: 800
+    initial_value: ${freezer_off_min}
     min_value: 0
     max_value: 5000
     step: 10
@@ -68,7 +68,7 @@ number:
     id: freezer_off_max
     optimistic: true
     restore_value: false
-    initial_value: 2500
+    initial_value: ${freezer_off_max}
     min_value: 0
     max_value: 10000
     step: 10
@@ -81,7 +81,7 @@ number:
     id: usv_freq_min
     optimistic: true
     restore_value: true
-    initial_value: 1970
+    initial_value: ${usv_freq_min}
     min_value: 0
     max_value: 10000
     step: 10
@@ -94,7 +94,7 @@ number:
     id: usv_freq_max
     optimistic: true
     restore_value: true
-    initial_value: 2030
+    initial_value: ${usv_freq_max}
     min_value: 0
     max_value: 10000
     step: 10
@@ -107,7 +107,7 @@ number:
     id: beep_min_duration
     optimistic: true
     restore_value: true
-    initial_value: 200
+    initial_value: ${beep_min_duration}
     min_value: 0
     max_value: 5000
     step: 5
@@ -120,7 +120,7 @@ number:
     id: frequency_filter_alpha
     optimistic: true
     restore_value: true
-    initial_value: 1
+    initial_value: ${frequency_filter_alpha}
     min_value: 0
     max_value: 1
     step: 0.001
@@ -132,7 +132,7 @@ number:
     id: noise_gate_floor_num
     optimistic: true
     restore_value: true
-    initial_value: 0.001
+    initial_value: ${noise_gate_floor_num}
     min_value: 0.0001
     max_value: 0.1
     step: 0.0001
@@ -144,7 +144,7 @@ number:
     id: pre_amp_gain_num
     optimistic: true
     restore_value: true
-    initial_value: 1.0
+    initial_value: ${pre_amp_gain_num}
     min_value: 0.1
     max_value: 20.0
     step: 0.1
@@ -156,7 +156,7 @@ number:
     id: usv_target_frequency
     optimistic: true
     restore_value: true
-    initial_value: 2000
+    initial_value: ${usv_target_frequency}
     min_value: 0
     max_value: 10000
     step: 10
@@ -169,7 +169,7 @@ number:
     id: usv_target_width
     optimistic: true
     restore_value: true
-    initial_value: 100
+    initial_value: ${usv_target_width}
     min_value: 1
     max_value: 1000
     step: 10
@@ -182,7 +182,7 @@ number:
     id: usv_guard_width
     optimistic: true
     restore_value: true
-    initial_value: 400
+    initial_value: ${usv_guard_width}
     min_value: 1
     max_value: 2000
     step: 10
@@ -195,7 +195,7 @@ number:
     id: usv_beep_threshold
     optimistic: true
     restore_value: true
-    initial_value: 5.0
+    initial_value: ${usv_beep_threshold}
     min_value: 0
     max_value: 1000
     step: 0.1
@@ -207,7 +207,7 @@ number:
     id: freezer_target_frequency
     optimistic: true
     restore_value: true
-    initial_value: 3515
+    initial_value: ${freezer_target_frequency}
     min_value: 0
     max_value: 10000
     step: 10
@@ -220,7 +220,7 @@ number:
     id: freezer_target_width
     optimistic: true
     restore_value: true
-    initial_value: 62.5
+    initial_value: ${freezer_target_width}
     min_value: 1
     max_value: 1000
     step: 10
@@ -233,7 +233,7 @@ number:
     id: freezer_guard_width
     optimistic: true
     restore_value: true
-    initial_value: 400
+    initial_value: ${freezer_guard_width}
     min_value: 1
     max_value: 2000
     step: 10
@@ -246,7 +246,7 @@ number:
     id: freezer_beep_threshold
     optimistic: true
     restore_value: true
-    initial_value: 2.0
+    initial_value: ${freezer_beep_threshold}
     min_value: 0
     max_value: 1000
     step: 0.1

@@ -109,6 +109,45 @@ Use the YAML above as a starting point for your own device configuration.
 Uncomment the `tunables` package line to expose the tuning numbers in Home
 Assistant.
 
+### Overridable tuning defaults
+
+All alarm tuning defaults are defined as `substitutions` in the package.  If
+your beeps have different frequencies or timings, override any of these in your
+device configuration instead of forking the package:
+
+```yaml
+substitutions:
+  # Frequencies and thresholds
+  usv_target_frequency: "2000"
+  usv_target_width: "100"
+  usv_guard_width: "400"
+  usv_beep_threshold: "5.0"
+  usv_freq_min: "1970"
+  usv_freq_max: "2030"
+
+  freezer_target_frequency: "3515"
+  freezer_target_width: "62.5"
+  freezer_guard_width: "400"
+  freezer_beep_threshold: "2.0"
+  freezer_freq_threshold: "1500"
+
+  # Durations (ms)
+  freezer_on_min: "800"
+  freezer_on_max: "1800"
+  freezer_off_min: "800"
+  freezer_off_max: "2500"
+  beep_min_duration: "200"
+
+  # Audio processing
+  beep_volume_threshold: "0.0"
+  frequency_filter_alpha: "1.0"
+  noise_gate_floor_num: "0.001"
+  pre_amp_gain_num: "1.0"
+
+packages:
+  beep_detector: github://caco3/esphome-beep-detector/beep-detector-common.yaml@main
+```
+
 ## Usage / Tuning
 
 The device exposes the following entities in Home Assistant:

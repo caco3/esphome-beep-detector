@@ -1,0 +1,576 @@
+substitutions:
+  name: "beep-detector"
+  friendly_name: "Beep Detector"
+  name_add_mac_suffix: "true"
+  project_name: "beep-detector.beep-detector"
+  project_version: "1.0.0"
+
+  board: "lolin_c3_mini"
+  flash_mode: "dio"
+  log_level: "INFO"
+
+  i2s_bclk_pin: "GPIO0"
+  i2s_lrclk_pin: "GPIO1"
+  i2s_din_pin: "GPIO3"
+  status_led_pin: "GPIO8"
+
+  # Source for the patched music_leds external component.
+  # Use "components" when compiling this repo directly.
+  # When including this file as a remote package, override this to e.g.
+  # github://github.com/caco3/esphome-beep-detector@main
+  music_leds_source: "components"
+  # Refresh interval for the music_leds external component.  Set to "0s" for
+  # local development so edits are picked up immediately, and a longer interval
+  # (e.g. "1d") when pulling from a remote repository.
+  music_leds_refresh: "0s"
+
+esphome:
+  name: "${name}"
+  name_add_mac_suffix: "${name_add_mac_suffix}"
+  friendly_name: "${friendly_name}"
+  project:
+    name: "${project_name}"
+    version: "${project_version}"
+  platformio_options:
+    board_build.flash_mode: "${flash_mode}"
+  on_boot:
+    priority: 600
+    then:
+      - lambda: |-
+          id(sound_engine).set_noise_gate_floor(id(g_noise_gate_floor_num));
+          id(sound_engine).set_pre_amp_gain(id(g_pre_amp_gain_num));
+          id(sound_engine).set_usv_target_freq(id(g_usv_target_frequency));
+          id(sound_engine).set_usv_target_width(id(g_usv_target_width));
+          id(sound_engine).set_usv_guard_width(id(g_usv_guard_width));
+          id(sound_engine).set_freezer_target_freq(id(g_freezer_target_frequency));
+          id(sound_engine).set_freezer_target_width(id(g_freezer_target_width));
+          id(sound_engine).set_freezer_guard_width(id(g_freezer_guard_width));
+
+esp32:
+  board: "${board}"
+  framework:
+    type: arduino
+
+wifi:
+  ap: {}
+
+captive_portal:
+
+api:
+
+logger:
+  level: ${log_level}
+
+# ---------------------------------------------------------------------------
+# 3rd-party FFT / audio engine
+# ---------------------------------------------------------------------------
+external_components:
+  # The upstream music_leds uses the Xtensa-only `memw` instruction, which does
+  # not exist on the ESP32-C3 (RISC-V). Use a local, patched copy.
+  - source: ${music_leds_source}
+    components: [music_leds]
+    refresh: ${music_leds_refresh}
+  # fastled_helper is unmodified, so keep pulling it from upstream.
+  - source: github://andrewjswan/esphome-components
+    components: [fastled_helper]
+    refresh: 1d
+
+# ---------------------------------------------------------------------------
+# INMP441 I2S microphone wiring (example pins on an ESP32-C3 SuperMini):
+#   VDD  -> 3.3 V
+#   GND  -> GND
+#   SCK  -> P0 / GPIO0 (BCLK)
+#   WS   -> P1 / GPIO1 (LRCLK)
+#   SD   -> P3 / GPIO3 (DIN)
+#   L/R  -> GND (left channel)
+#
+# The MAX4466 is an analog microphone.  Current ESPHome microphone platforms
+# do not support the ESP32 internal ADC any more, so a bare MAX4466 needs an
+# external I2S ADC between the mic and the ESP32, after which the microphone
+# block below stays the same (adc_type: external).  If you only have the
+# MAX4466 module itself, the simplest path is to use an INMP441 instead.
+# ---------------------------------------------------------------------------
+i2s_audio:
+  i2s_bclk_pin: "${i2s_bclk_pin}"
+  i2s_lrclk_pin: "${i2s_lrclk_pin}"
+
+microphone:
+  - platform: i2s_audio
+    id: inmp441_mic
+    i2s_din_pin: "${i2s_din_pin}"
+    adc_type: external
+    pdm: false
+    channel: left
+    bits_per_sample: 16bit
+    sample_rate: 16000
+
+# Dummy light needed because music_leds declares light as a dependency.
+# This uses the onboard LED on GPIO8 and is marked internal so it does not
+# appear in Home Assistant.
+light:
+  - platform: status_led
+    name: "Beep Detector Status"
+    id: led_status
+    pin: "${status_led_pin}"
+    internal: true
+
+music_leds:
+  id: sound_engine
+  microphone: inmp441_mic
+  sample_scale: 24
+  scaling_mode: SQUARE_ROOT
+  noise_gate_floor: 0.001
+  sample_gain: 80
+  task_core: 0
+  task_priority: 10
+  on_sound_loop:
+    then:
+      - lambda: |-
+          uint32_t now = millis();
+
+          if (id(g_freezer_alarm_active) && now >= id(g_freezer_alarm_off_ms)) {
+            id(freezer_beep).publish_state(false);
+            id(g_freezer_alarm_active) = false;
+            id(g_freezer_beep_count) = 0;
+            id(g_freezer_first_beep_ms) = 0;
+            id(g_freezer_last_beep_ms) = 0;
+          }
+
+          if (id(g_usv_alarm_active) && now >= id(g_usv_alarm_off_ms)) {
+            id(usv_beep).publish_state(false);
+            id(g_usv_alarm_active) = false;
+            id(g_usv_group_count) = 0;
+            id(g_usv_beep_in_group) = 0;
+            id(g_usv_first_group_ms) = 0;
+            id(g_usv_last_beep_ms) = 0;
+          }
+
+          float vol = volume_smth;
+          float freq = fft_major_peak;
+          float threshold = id(g_beep_volume_threshold);
+
+          id(s_current_volume).publish_state(vol);
+          id(s_current_frequency).publish_state(freq);
+          id(s_current_usv_magnitude).publish_state(usv_signal);
+          id(s_current_usv_snr).publish_state(usv_snr);
+          id(s_current_freezer_magnitude).publish_state(freezer_signal);
+          id(s_current_freezer_snr).publish_state(freezer_snr);
+
+          bool usv_now = (usv_snr >= id(g_usv_beep_threshold)) && (vol >= threshold * 0.5f);
+          bool freezer_now = (freezer_snr >= id(g_freezer_beep_threshold)) && (vol >= threshold * 0.5f);
+          bool in_target_now = (usv_now || freezer_now);
+          bool loud_sustain = (vol >= threshold * 0.75f);
+
+          // Use the in-band peak frequency for the active target.  When both targets fire
+          // at the same time, pick the one with the higher SNR so the beep is classified
+          // by the dominant tone, not by the global FFT peak (which can be noise).
+          float target_freq = 0.0f;
+          if (usv_now && freezer_now) {
+            target_freq = (usv_snr >= freezer_snr) ? usv_peak_freq : freezer_peak_freq;
+          } else if (usv_now) {
+            target_freq = usv_peak_freq;
+          } else if (freezer_now) {
+            target_freq = freezer_peak_freq;
+          }
+
+          id(b_current_usv_beep).publish_state(usv_now);
+          id(b_current_freezer_beep).publish_state(freezer_now);
+
+          // Beep candidate detection: target SNR above threshold, gated by a soft volume floor.
+          // Hysteresis (5 out-of-target frames, or volume still above 75%) keeps the candidate alive through short dropouts.
+          bool active;
+          if (id(g_beep_active)) {
+            active = (in_target_now || loud_sustain) && (id(g_beep_out_count) < 5);
+          } else {
+            active = in_target_now;
+          }
+
+          if (active) {
+            if (!id(g_beep_active)) {
+              id(g_beep_active) = true;
+              id(g_beep_start_ms) = now;
+              id(g_beep_freq_sum) = 0.0f;
+              id(g_beep_inrange_count) = 0;
+              id(g_beep_out_count) = 0;
+              id(g_beep_frame_count) = 0;
+            }
+
+            id(g_beep_frame_count)++;
+            if (in_target_now) {
+              id(g_beep_freq_sum) += target_freq;
+              id(g_beep_inrange_count)++;
+              id(g_beep_out_count) = 0;
+            } else {
+              id(g_beep_out_count)++;
+            }
+          } else {
+            if (id(g_beep_active)) {
+              id(g_beep_active) = false;
+              id(g_beep_out_count) = 0;
+              uint32_t duration = now - id(g_beep_start_ms);
+
+              // Use only frames that actually stayed inside the target bands
+              // to compute the average frequency. This ignores decay/noise tails.
+              float avg_freq = 0.0f;
+              if (id(g_beep_inrange_count) > 0) {
+                avg_freq = id(g_beep_freq_sum) / id(g_beep_inrange_count);
+              }
+
+              uint32_t pause = 0;
+              if (id(g_last_beep_end_ms) != 0) {
+                pause = now - id(g_last_beep_end_ms);
+              }
+              id(g_last_beep_end_ms) = now;
+
+              id(s_last_beep_frequency).publish_state(avg_freq);
+              id(s_last_beep_duration).publish_state(duration);
+              id(s_last_pause).publish_state(pause);
+
+              char buf[80];
+              snprintf(buf, sizeof(buf), "f=%.1f Hz, dur=%u ms, pause=%u ms",
+                       avg_freq, (unsigned) duration, (unsigned) pause);
+              id(t_last_beep_log).publish_state(std::string(buf));
+              ESP_LOGI("beep", "%s", buf);
+
+              bool is_usv = (avg_freq >= id(g_usv_freq_min) && avg_freq <= id(g_usv_freq_max));
+              bool is_freezer = (avg_freq >= id(g_freezer_freq_threshold)) && !is_usv;
+
+              // Reject beeps that are too short or where most frames did not
+              // have a stable frequency in the target range.
+              bool good_beep = false;
+              if (duration >= id(g_beep_min_duration) && id(g_beep_frame_count) > 0) {
+                float good_ratio = (float) id(g_beep_inrange_count) / (float) id(g_beep_frame_count);
+                good_beep = (good_ratio >= 0.5f);
+              }
+
+              if (good_beep) {
+                ESP_LOGI("beep", "Beep: %s", buf);
+
+                if (is_usv) {
+                  if (id(g_usv_last_beep_ms) == 0 || pause > 2000) {
+                    if (id(g_usv_group_count) == 0) {
+                      id(g_usv_first_group_ms) = id(g_beep_start_ms);
+                    }
+                    id(g_usv_group_count)++;
+                    id(g_usv_beep_in_group) = 1;
+                  } else {
+                    id(g_usv_beep_in_group)++;
+                  }
+                  id(g_usv_last_beep_ms) = now;
+
+                  if (id(g_usv_group_count) >= 4) {
+                    id(g_usv_alarm_off_ms) = now + 30000;
+                    if (!id(g_usv_alarm_active)) {
+                      id(g_usv_alarm_active) = true;
+                      id(usv_beep).publish_state(true);
+                    }
+                  }
+                } else {
+                  id(g_usv_group_count) = 0;
+                  id(g_usv_beep_in_group) = 0;
+                  id(g_usv_first_group_ms) = 0;
+                }
+
+                if (is_freezer) {
+                  bool good_on = (duration >= id(g_freezer_on_min) && duration <= id(g_freezer_on_max));
+                  bool good_off = (id(g_freezer_beep_count) == 0) ||
+                                  (pause >= id(g_freezer_off_min) && pause <= id(g_freezer_off_max));
+
+                  if (good_on && good_off) {
+                    if (id(g_freezer_beep_count) == 0) {
+                      id(g_freezer_first_beep_ms) = id(g_beep_start_ms);
+                    }
+                    id(g_freezer_beep_count)++;
+                    id(g_freezer_last_beep_ms) = now;
+
+                    if (id(g_freezer_beep_count) >= 5) {
+                      id(g_freezer_alarm_off_ms) = now + 10000;
+                      if (!id(g_freezer_alarm_active)) {
+                        id(g_freezer_alarm_active) = true;
+                        id(freezer_beep).publish_state(true);
+                      }
+                    }
+                  } else {
+                    id(g_freezer_beep_count) = 0;
+                    id(g_freezer_first_beep_ms) = 0;
+                  }
+                } else {
+                  id(g_freezer_beep_count) = 0;
+                  id(g_freezer_first_beep_ms) = 0;
+                }
+              }
+            }
+          }
+
+# ---------------------------------------------------------------------------
+# Persistent tuning numbers exposed to Home Assistant
+# ---------------------------------------------------------------------------
+globals:
+  - id: g_beep_active
+    type: bool
+    initial_value: 'false'
+    restore_value: false
+  - id: g_beep_start_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_last_beep_end_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_beep_freq_sum
+    type: float
+    initial_value: '0.0'
+    restore_value: false
+  - id: g_beep_frame_count
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_beep_inrange_count
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_beep_out_count
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_freezer_beep_count
+    type: uint8_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_freezer_alarm_active
+    type: bool
+    initial_value: 'false'
+    restore_value: false
+  - id: g_freezer_alarm_off_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_freezer_first_beep_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_freezer_last_beep_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_usv_group_count
+    type: uint8_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_usv_beep_in_group
+    type: uint8_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_usv_alarm_active
+    type: bool
+    initial_value: 'false'
+    restore_value: false
+  - id: g_usv_alarm_off_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_usv_first_group_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_usv_last_beep_ms
+    type: uint32_t
+    initial_value: '0'
+    restore_value: false
+  - id: g_filtered_freq
+    type: float
+    initial_value: '0.0'
+    restore_value: false
+  - id: g_filtered_freq_init
+    type: bool
+    initial_value: 'false'
+    restore_value: false
+  - id: g_beep_volume_threshold
+    type: float
+    initial_value: '0.0'
+    restore_value: false
+  - id: g_freezer_freq_threshold
+    type: float
+    initial_value: '1500.0'
+    restore_value: false
+  - id: g_freezer_on_min
+    type: float
+    initial_value: '800.0'
+    restore_value: false
+  - id: g_freezer_on_max
+    type: float
+    initial_value: '1800.0'
+    restore_value: false
+  - id: g_freezer_off_min
+    type: float
+    initial_value: '800.0'
+    restore_value: false
+  - id: g_freezer_off_max
+    type: float
+    initial_value: '2500.0'
+    restore_value: false
+  - id: g_usv_freq_min
+    type: float
+    initial_value: '1970.0'
+    restore_value: false
+  - id: g_usv_freq_max
+    type: float
+    initial_value: '2030.0'
+    restore_value: false
+  - id: g_beep_min_duration
+    type: float
+    initial_value: '200.0'
+    restore_value: false
+  - id: g_frequency_filter_alpha
+    type: float
+    initial_value: '1.0'
+    restore_value: false
+  - id: g_noise_gate_floor_num
+    type: float
+    initial_value: '0.001'
+    restore_value: false
+  - id: g_pre_amp_gain_num
+    type: float
+    initial_value: '1.0'
+    restore_value: false
+  - id: g_usv_target_frequency
+    type: float
+    initial_value: '2000.0'
+    restore_value: false
+  - id: g_usv_target_width
+    type: float
+    initial_value: '100.0'
+    restore_value: false
+  - id: g_usv_guard_width
+    type: float
+    initial_value: '400.0'
+    restore_value: false
+  - id: g_freezer_target_frequency
+    type: float
+    initial_value: '3515.0'
+    restore_value: false
+  - id: g_freezer_target_width
+    type: float
+    initial_value: '62.5'
+    restore_value: false
+  - id: g_freezer_guard_width
+    type: float
+    initial_value: '400.0'
+    restore_value: false
+  - id: g_usv_beep_threshold
+    type: float
+    initial_value: '5.0'
+    restore_value: false
+  - id: g_freezer_beep_threshold
+    type: float
+    initial_value: '2.0'
+    restore_value: false
+
+sensor:
+  - platform: template
+    name: "Current volume"
+    id: s_current_volume
+    update_interval: never
+    unit_of_measurement: ""
+
+  - platform: template
+    name: "Current frequency"
+    id: s_current_frequency
+    update_interval: never
+    unit_of_measurement: "Hz"
+    filters:
+      - lambda: |-
+          float alpha = id(g_frequency_filter_alpha);
+          float prev = id(g_filtered_freq);
+          float out;
+          if (!id(g_filtered_freq_init)) {
+            out = x;
+            id(g_filtered_freq_init) = true;
+          } else {
+            out = (alpha * x) + ((1.0 - alpha) * prev);
+          }
+          id(g_filtered_freq) = out;
+          return out;
+
+  - platform: template
+    name: "Current USV magnitude"
+    id: s_current_usv_magnitude
+    update_interval: never
+    unit_of_measurement: ""
+    accuracy_decimals: 1
+
+  - platform: template
+    name: "Current USV SNR"
+    id: s_current_usv_snr
+    update_interval: never
+    unit_of_measurement: ""
+    accuracy_decimals: 2
+
+  - platform: template
+    name: "Current freezer magnitude"
+    id: s_current_freezer_magnitude
+    update_interval: never
+    unit_of_measurement: ""
+    accuracy_decimals: 1
+
+  - platform: template
+    name: "Current freezer SNR"
+    id: s_current_freezer_snr
+    update_interval: never
+    unit_of_measurement: ""
+    accuracy_decimals: 2
+
+  - platform: template
+    name: "Last beep frequency"
+    id: s_last_beep_frequency
+    update_interval: never
+    unit_of_measurement: "Hz"
+    accuracy_decimals: 1
+
+  - platform: template
+    name: "Last beep duration"
+    id: s_last_beep_duration
+    update_interval: never
+    unit_of_measurement: "ms"
+    accuracy_decimals: 0
+
+  - platform: template
+    name: "Last pause"
+    id: s_last_pause
+    update_interval: never
+    unit_of_measurement: "ms"
+    accuracy_decimals: 0
+
+text_sensor:
+  - platform: template
+    name: "Last beep log"
+    id: t_last_beep_log
+    update_interval: never
+
+binary_sensor:
+  - platform: template
+    name: "Current USV beep"
+    id: b_current_usv_beep
+    device_class: sound
+
+  - platform: template
+    name: "Current freezer beep"
+    id: b_current_freezer_beep
+    device_class: sound
+
+  - platform: template
+    id: freezer_beep
+    name: "Freezer Alarm"
+    device_class: sound
+
+  - platform: template
+    id: usv_beep
+    name: "USV Alarm"
+    device_class: sound
+
+  - platform: template
+    name: "Beep alarm"
+    id: any_beep
+    device_class: sound
+    lambda: return id(freezer_beep).state || id(usv_beep).state;

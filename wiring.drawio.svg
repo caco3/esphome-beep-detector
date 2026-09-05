@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 400" width="850" height="400" font-family="sans-serif">
+  <rect width="850" height="400" fill="#ffffff"/>
+
+  <text x="350" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">ESP32-C3 SuperMini to INMP441 wiring</text>
+
+  <!-- ESP32-C3 SuperMini box -->
+  <rect x="40" y="60" width="220" height="260" rx="8" fill="#e1f5fe" stroke="#01579b" stroke-width="2"/>
+  <text x="150" y="90" text-anchor="middle" font-size="15" font-weight="bold" fill="#01579b">ESP32-C3 SuperMini</text>
+
+  <!-- INMP441 box -->
+  <rect x="440" y="60" width="200" height="260" rx="8" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
+  <text x="540" y="90" text-anchor="middle" font-size="15" font-weight="bold" fill="#b85450">INMP441</text>
+
+  <!-- Wires and labels -->
+  <line x1="260" y1="100" x2="440" y2="100" stroke="#333" stroke-width="2"/>
+  <text x="350" y="96" text-anchor="middle" font-size="13" fill="#333">3.3 V</text>
+
+  <line x1="260" y1="140" x2="440" y2="140" stroke="#333" stroke-width="2"/>
+  <text x="350" y="136" text-anchor="middle" font-size="13" fill="#333">GND</text>
+
+  <line x1="260" y1="180" x2="440" y2="180" stroke="#333" stroke-width="2"/>
+  <text x="350" y="176" text-anchor="middle" font-size="13" fill="#333">P0 / GPIO0  →  SCK</text>
+
+  <line x1="260" y1="220" x2="440" y2="220" stroke="#333" stroke-width="2"/>
+  <text x="350" y="216" text-anchor="middle" font-size="13" fill="#333">P1 / GPIO1  →  WS</text>
+
+  <line x1="260" y1="260" x2="440" y2="260" stroke="#333" stroke-width="2"/>
+  <text x="350" y="256" text-anchor="middle" font-size="13" fill="#333">P3 / GPIO3  →  SD</text>
+
+  <text x="425" y="350" text-anchor="middle" font-size="13" fill="#333">INMP441 L/R pin → GND (selects left channel)</text>
+</svg>

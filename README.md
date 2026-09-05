@@ -57,57 +57,20 @@ is vendored because the upstream version is not compatible with the ESP32-C3
 `fastled_helper` is also required by `music_leds`, but it is not modified and is
 still loaded from the upstream GitHub repository.
 
-## Configuration
+## Installation
 
-The reusable ESPHome package is maintained in a separate repository:
-`caco3/esphome-beep-detector`.  `beep-detector.yaml` in this directory is the
-local device example; it pulls the package from GitHub.
+This repository is the reusable ESPHome package.  In your own device
+configuration, include the package from this repository and add your Wi-Fi and
+API credentials.
 
-1. Copy or create a `.common.yaml` in this directory with your Wi-Fi and API
-   credentials (this file is already ignored by Git):
+## Using the package
 
-   ```yaml
-   wifi:
-     ssid: !secret wifi_ssid
-     password: !secret wifi_password
-
-   api:
-     encryption:
-       key: !secret api_key
-
-   ota:
-     - platform: esphome
-       password: !secret ota_password
-   ```
-
-2. Compile and flash the local example:
-
-   `beep-detector.yaml` is the normal (locked) build with fixed defaults and
-   no runtime tuning exposed to HA/REST.  Uncomment the `tunables` package line
-   in `beep-detector.yaml` if you want the tuning numbers exposed in Home
-   Assistant.
-
-   ```bash
-   esphome compile beep-detector.yaml
-   esphome upload --device 192.168.1.10 beep-detector.yaml
-   ```
-
-   For the very first install over USB, compile and then flash with the port:
-
-   ```bash
-   esphome compile beep-detector.yaml
-   esphome upload --device /dev/ttyACM0 beep-detector.yaml
-   ```
-
-## Using as a package
-
-The package is published on GitHub as `caco3/esphome-beep-detector`.  The main
-package file is `beep-detector-common.yaml`; `numbers-tunable.yaml` is a small
-package fragment that adds the tuning numbers.  Include it alongside the main
-package if you want the runtime-tunable version.
+The main package file is `beep-detector-common.yaml`; `numbers-tunable.yaml` is a
+small package fragment that adds the tuning numbers.  Include it alongside the
+main package if you want the runtime-tunable version.
 
 The package defines substitutions for the device name, board, microphone pins,
-and the external component source.  Override them in your main configuration.
+and the external component source.  Override them in your device configuration.
 
 ```yaml
 substitutions:
@@ -140,7 +103,7 @@ wifi:
   password: !secret wifi_password
 ```
 
-Ready-to-copy example is in `example.yaml`.
+Use the YAML above as a starting point for your own device configuration.
 
 ## Usage / Tuning
 
@@ -213,9 +176,9 @@ SNR-based.
 
 ### Tuned parameters
 
-Defaults in `beep-detector-common.yaml` (used by the locked `beep-detector.yaml`)
-and in `numbers-tunable.yaml` (used by `beep-detector-configurable.yaml`) after
-field tuning with an INMP441 at 16 kHz:
+Defaults in `beep-detector-common.yaml` (main package) and in
+`numbers-tunable.yaml` (tunables package fragment) after field tuning with an
+INMP441 at 16 kHz:
 
 | Entity | Freezer | USV |
 |---|---|---|

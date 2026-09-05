@@ -113,7 +113,7 @@ Assistant.
 
 All alarm tuning defaults are defined as `substitutions` in the package.  If
 your beeps have different frequencies or timings, override any of these in your
-device configuration instead of forking the package:
+device configuration:
 
 ```yaml
 substitutions:

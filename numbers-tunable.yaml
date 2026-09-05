@@ -2,6 +2,7 @@ number:
   - platform: template
     name: "Beep volume threshold"
     id: beep_volume_threshold
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${beep_volume_threshold}
@@ -14,6 +15,7 @@ number:
   - platform: template
     name: "Freezer frequency threshold"
     id: freezer_freq_threshold
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${freezer_freq_threshold}
@@ -27,6 +29,7 @@ number:
   - platform: template
     name: "Freezer on min duration"
     id: freezer_on_min
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: false
     initial_value: ${freezer_on_min}
@@ -40,6 +43,7 @@ number:
   - platform: template
     name: "Freezer on max duration"
     id: freezer_on_max
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: false
     initial_value: ${freezer_on_max}
@@ -53,6 +57,7 @@ number:
   - platform: template
     name: "Freezer off min duration"
     id: freezer_off_min
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: false
     initial_value: ${freezer_off_min}
@@ -66,6 +71,7 @@ number:
   - platform: template
     name: "Freezer off max duration"
     id: freezer_off_max
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: false
     initial_value: ${freezer_off_max}
@@ -79,6 +85,7 @@ number:
   - platform: template
     name: "USV Alarm min frequency"
     id: usv_freq_min
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${usv_freq_min}
@@ -92,6 +99,7 @@ number:
   - platform: template
     name: "USV Alarm max frequency"
     id: usv_freq_max
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${usv_freq_max}
@@ -105,6 +113,7 @@ number:
   - platform: template
     name: "Beep min duration"
     id: beep_min_duration
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${beep_min_duration}
@@ -118,6 +127,7 @@ number:
   - platform: template
     name: "Frequency filter alpha"
     id: frequency_filter_alpha
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${frequency_filter_alpha}
@@ -130,6 +140,7 @@ number:
   - platform: template
     name: "Noise gate floor"
     id: noise_gate_floor_num
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${noise_gate_floor_num}
@@ -142,6 +153,7 @@ number:
   - platform: template
     name: "Pre-amp gain"
     id: pre_amp_gain_num
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${pre_amp_gain_num}
@@ -154,6 +166,7 @@ number:
   - platform: template
     name: "USV target frequency"
     id: usv_target_frequency
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${usv_target_frequency}
@@ -167,6 +180,7 @@ number:
   - platform: template
     name: "USV target width"
     id: usv_target_width
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${usv_target_width}
@@ -180,6 +194,7 @@ number:
   - platform: template
     name: "USV guard width"
     id: usv_guard_width
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${usv_guard_width}
@@ -193,6 +208,7 @@ number:
   - platform: template
     name: "USV beep threshold"
     id: usv_beep_threshold
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${usv_beep_threshold}
@@ -205,6 +221,7 @@ number:
   - platform: template
     name: "Freezer target frequency"
     id: freezer_target_frequency
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${freezer_target_frequency}
@@ -218,6 +235,7 @@ number:
   - platform: template
     name: "Freezer target width"
     id: freezer_target_width
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${freezer_target_width}
@@ -231,6 +249,7 @@ number:
   - platform: template
     name: "Freezer guard width"
     id: freezer_guard_width
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${freezer_guard_width}
@@ -244,6 +263,7 @@ number:
   - platform: template
     name: "Freezer beep threshold"
     id: freezer_beep_threshold
+    entity_category: "diagnostic"
     optimistic: true
     restore_value: true
     initial_value: ${freezer_beep_threshold}

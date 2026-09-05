@@ -119,6 +119,7 @@ i2s_audio:
 microphone:
   - platform: i2s_audio
     id: inmp441_mic
+    entity_category: "diagnostic"
     i2s_din_pin: "${i2s_din_pin}"
     adc_type: external
     pdm: false
@@ -133,6 +134,7 @@ light:
   - platform: status_led
     name: "Beep Detector Status"
     id: led_status
+    entity_category: "diagnostic"
     pin: "${status_led_pin}"
     internal: true
 
@@ -493,12 +495,14 @@ sensor:
   - platform: template
     name: "Current volume"
     id: s_current_volume
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: ""
 
   - platform: template
     name: "Current frequency"
     id: s_current_frequency
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: "Hz"
     filters:
@@ -518,6 +522,7 @@ sensor:
   - platform: template
     name: "Current USV magnitude"
     id: s_current_usv_magnitude
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: ""
     accuracy_decimals: 1
@@ -525,6 +530,7 @@ sensor:
   - platform: template
     name: "Current USV SNR"
     id: s_current_usv_snr
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: ""
     accuracy_decimals: 2
@@ -532,6 +538,7 @@ sensor:
   - platform: template
     name: "Current freezer magnitude"
     id: s_current_freezer_magnitude
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: ""
     accuracy_decimals: 1
@@ -539,6 +546,7 @@ sensor:
   - platform: template
     name: "Current freezer SNR"
     id: s_current_freezer_snr
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: ""
     accuracy_decimals: 2
@@ -546,6 +554,7 @@ sensor:
   - platform: template
     name: "Last beep frequency"
     id: s_last_beep_frequency
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: "Hz"
     accuracy_decimals: 1
@@ -553,6 +562,7 @@ sensor:
   - platform: template
     name: "Last beep duration"
     id: s_last_beep_duration
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: "ms"
     accuracy_decimals: 0
@@ -560,6 +570,7 @@ sensor:
   - platform: template
     name: "Last pause"
     id: s_last_pause
+    entity_category: "diagnostic"
     update_interval: never
     unit_of_measurement: "ms"
     accuracy_decimals: 0
@@ -568,17 +579,20 @@ text_sensor:
   - platform: template
     name: "Last beep log"
     id: t_last_beep_log
+    entity_category: "diagnostic"
     update_interval: never
 
 binary_sensor:
   - platform: template
     name: "Current USV beep"
     id: b_current_usv_beep
+    entity_category: "diagnostic"
     device_class: sound
 
   - platform: template
     name: "Current freezer beep"
     id: b_current_freezer_beep
+    entity_category: "diagnostic"
     device_class: sound
 
   - platform: template
@@ -594,5 +608,6 @@ binary_sensor:
   - platform: template
     name: "Beep alarm"
     id: any_beep
+    entity_category: "diagnostic"
     device_class: sound
     lambda: return id(freezer_beep).state || id(usv_beep).state;

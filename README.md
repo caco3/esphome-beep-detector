@@ -105,6 +105,40 @@ wifi:
 
 Use the YAML above as a starting point for your own device configuration.
 
+### Tunable variant
+
+To expose the tuning numbers in Home Assistant, also include the
+`numbers-tunable.yaml` package fragment:
+
+```yaml
+substitutions:
+  name: "beep-detector"
+  friendly_name: "Beep Detector"
+  music_leds_source: "github://caco3/esphome-beep-detector@main"
+  music_leds_refresh: "1d"
+
+packages:
+  beep_detector: github://caco3/esphome-beep-detector/beep-detector-common.yaml@main
+  tunables: github://caco3/esphome-beep-detector/numbers-tunable.yaml@main
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+```
+
 ## Usage / Tuning
 
 The device exposes the following entities in Home Assistant:
